@@ -135,6 +135,59 @@ class EventCenterSpec: QuickSpec {
                 }
             }
         }
+        
+        describe("EventCenter with EventType") {
+
+            it("can register with event and unregister Handler") {
+                let ec = EventCenter.defaultCenter  // use default EventCenter
+                var called = 0
+                ec.register(self, event:"event") { (num: Int) in
+                    expect(num) == 99
+                    called++
+                }
+                ec.post(99, event:"event")
+                
+
+                ec.unregister(self, event:"event")
+                ec.post(100, event:"event")  // not handled
+                
+                ec.register(self, event:EnumEventType.SUCCESS) { (num: Int) in
+                    expect(num) == 101
+                    called++
+                }
+                ec.post(101, event:EnumEventType.SUCCESS)
+
+                expect(called) == 2
+            }
+            
+            it("Only Called Correct Event Type") {
+                let ec = EventCenter()  // can use original EventCenter
+                
+                var called = 0
+
+                ec.register(self, event:EnumEventType.SUCCESS) { (num: Int) in
+                    expect(num) == 200
+                    called++
+                }
+                ec.register(self, event:EnumEventType.SUCCESS) { (s: String) in
+                    expect(s) == "yes!"
+                    called++
+                }
+                ec.register(self, event:"yes!") { (s: String) in
+                    expect(s) == "yes!"
+                    called++
+                }
+                
+                ec.post(200, event:EnumEventType.SUCCESS)
+                ec.post("yes!", event:EnumEventType.SUCCESS)
+                ec.post("yes!", event:"yes!")
+                
+                ec.post("yes!", event:"yes?")
+                ec.post("yes!", event:EnumEventType.ERROR)
+                expect(called) == 3
+            }
+            
+        }
     }
     
     func myHandler(event: MyEvent) {
@@ -160,6 +213,11 @@ struct MyEventStruct {
 enum EnumEvent {
     case SUCCESS(code: Int)
     case ERROR(code: Int)
+}
+
+enum EnumEventType {
+    case SUCCESS
+    case ERROR
 }
 
 //        describe("these will fail") {
