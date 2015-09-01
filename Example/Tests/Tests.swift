@@ -136,54 +136,54 @@ class EventCenterSpec: QuickSpec {
             }
         }
         
-        describe("EventCenter with EventType") {
+        describe("EventCenter with key") {
 
-            it("can register with event and unregister Handler") {
+            it("can register with key and unregister Handler") {
                 let ec = EventCenter.defaultCenter  // use default EventCenter
                 var called = 0
-                ec.register(self, event:"event") { (num: Int) in
+                ec.register(self, key:"key") { (num: Int) in
                     expect(num) == 99
                     called++
                 }
-                ec.post(99, event:"event")
+                ec.post(99, key:"key")
                 
 
-                ec.unregister(self, event:"event")
-                ec.post(100, event:"event")  // not handled
+                ec.unregister(self, key:"key")
+                ec.post(100, key:"key")  // not handled
                 
-                ec.register(self, event:EnumEventType.SUCCESS) { (num: Int) in
+                ec.register(self, key:EnumKey.SUCCESS) { (num: Int) in
                     expect(num) == 101
                     called++
                 }
-                ec.post(101, event:EnumEventType.SUCCESS)
+                ec.post(101, key:EnumKey.SUCCESS)
 
                 expect(called) == 2
             }
             
-            it("Only Called Correct Event Type") {
+            it("Only Called Correct key") {
                 let ec = EventCenter()  // can use original EventCenter
                 
                 var called = 0
 
-                ec.register(self, event:EnumEventType.SUCCESS) { (num: Int) in
+                ec.register(self, key:EnumKey.SUCCESS) { (num: Int) in
                     expect(num) == 200
                     called++
                 }
-                ec.register(self, event:EnumEventType.SUCCESS) { (s: String) in
+                ec.register(self, key:EnumKey.SUCCESS) { (s: String) in
                     expect(s) == "yes!"
                     called++
                 }
-                ec.register(self, event:"yes!") { (s: String) in
+                ec.register(self, key:"yes!") { (s: String) in
                     expect(s) == "yes!"
                     called++
                 }
                 
-                ec.post(200, event:EnumEventType.SUCCESS)
-                ec.post("yes!", event:EnumEventType.SUCCESS)
-                ec.post("yes!", event:"yes!")
+                ec.post(200, key:EnumKey.SUCCESS)
+                ec.post("yes!", key:EnumKey.SUCCESS)
+                ec.post("yes!", key:"yes!")
                 
-                ec.post("yes!", event:"yes?")
-                ec.post("yes!", event:EnumEventType.ERROR)
+                ec.post("yes!", key:"yes?")
+                ec.post("yes!", key:EnumKey.ERROR)
                 expect(called) == 3
             }
             
@@ -215,7 +215,7 @@ enum EnumEvent {
     case ERROR(code: Int)
 }
 
-enum EnumEventType {
+enum EnumKey {
     case SUCCESS
     case ERROR
 }

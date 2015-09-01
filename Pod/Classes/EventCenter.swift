@@ -22,21 +22,21 @@ public class EventCenter {
     
     public func register<T>(observer: AnyObject, queue: dispatch_queue_t?, handler: T -> Void) {
         dispatch_sync(EventCenter.operationQueue) {
-            self.observers.append(ObserverInfo(observer: observer, event: nil, handler: handler, queue: queue))
+            self.observers.append(ObserverInfo(observer: observer, key: nil, handler: handler, queue: queue))
         }
     }
     
-    public func register<T,E:Equatable>(observer: AnyObject, event:E, handler: T -> Void) {
-        register(observer, event:event, queue: nil, handler:handler)
+    public func register<T,U:Equatable>(observer: AnyObject, key:U, handler: T -> Void) {
+        register(observer, key:key, queue: nil, handler:handler)
     }
     
-    public func registerOnMainThread<T,E:Equatable>(observer: AnyObject, event:E, handler: T -> Void) {
-        register(observer, event:event, queue: dispatch_get_main_queue(), handler:handler)
+    public func registerOnMainThread<T,U:Equatable>(observer: AnyObject, key:U, handler: T -> Void) {
+        register(observer, key:key, queue: dispatch_get_main_queue(), handler:handler)
     }
     
-    public func register<T,E:Equatable>(observer: AnyObject, event:E, queue: dispatch_queue_t?, handler: T -> Void) {
+    public func register<T,U:Equatable>(observer: AnyObject, key:U, queue: dispatch_queue_t?, handler: T -> Void) {
         dispatch_sync(EventCenter.operationQueue) {
-            self.observers.append(ObserverInfo(observer: observer, event:event, handler: handler, queue: queue))
+            self.observers.append(ObserverInfo(observer: observer, key:key, handler: handler, queue: queue))
         }
     }
     
@@ -46,15 +46,15 @@ public class EventCenter {
         }
     }
     
-    public func unregister<E:Equatable>(observer: AnyObject, event: E) {
+    public func unregister<U:Equatable>(observer: AnyObject, key: U) {
         dispatch_sync(EventCenter.operationQueue) {
-            self.observers = self.observers.filter { $0.observer !== observer && ($0.event as? E) != event }
+            self.observers = self.observers.filter { $0.observer !== observer && ($0.key as? U) != key }
         }
     }
 
     public func post<T>(obj: T) {
         for info in observers {
-            if let h = info.handler as? (T -> Void) where info.event == nil {
+            if let h = info.handler as? (T -> Void) where info.key == nil {
                 if let queue = info.queue {
                     dispatch_async(queue) { h(obj) }
                 } else {
@@ -64,10 +64,10 @@ public class EventCenter {
         }
     }
     
-    public func post<T, E:Equatable>(obj: T, event:E) {
+    public func post<T, U:Equatable>(obj: T, key:U) {
         for info in observers {
-            if let h = info.handler as? (T -> Void), e = info.event as? E {
-                if e != event {
+            if let h = info.handler as? (T -> Void), k = info.key as? U {
+                if k != key {
                     continue
                 }
                 if let queue = info.queue {
@@ -85,7 +85,7 @@ public class EventCenter {
     
     private struct ObserverInfo {
         let observer: AnyObject
-        let event: Any?
+        let key: Any?
         let handler: Any
         let queue: dispatch_queue_t?
     }
