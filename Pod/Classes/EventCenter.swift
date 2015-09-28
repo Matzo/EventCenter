@@ -54,7 +54,7 @@ public class EventCenter {
 
     public func post<T>(obj: T) {
         for info in observers {
-            if let h = info.handler as? (T -> Void) where info.key == nil {
+            if let h = info.handler as? (T -> Void) where info.key == nil && equalsHandlerType(obj, handler: info.handler) {
                 if let queue = info.queue {
                     dispatch_async(queue) { h(obj) }
                 } else {
@@ -66,7 +66,7 @@ public class EventCenter {
     
     public func post<T, U:Equatable>(obj: T, key:U) {
         for info in observers {
-            if let h = info.handler as? (T -> Void), k = info.key as? U {
+            if let h = info.handler as? (T -> Void), k = info.key as? U where equalsHandlerType(obj, handler: info.handler) {
                 if k != key {
                     continue
                 }
@@ -79,6 +79,9 @@ public class EventCenter {
         }
     }
     
+    private func equalsHandlerType<T>(obj: T, handler:Any) -> Bool {
+        return Mirror(reflecting: handler).subjectType is (T -> Void).Type
+    }
 
     static private let operationQueue = dispatch_queue_create("mokemokechicken.EventCenter", DISPATCH_QUEUE_SERIAL)
     private var observers = [ObserverInfo]()
