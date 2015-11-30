@@ -42,13 +42,13 @@ public class EventCenter {
     
     public func unregister(observer: AnyObject) {
         dispatch_sync(EventCenter.operationQueue) {
-            self.observers = self.observers.filter { $0.observer !== observer }
+            self.observers = self.observers.filter { $0.observer != nil && $0.observer !== observer }
         }
     }
     
     public func unregister<U:Equatable>(observer: AnyObject, key: U) {
         dispatch_sync(EventCenter.operationQueue) {
-            self.observers = self.observers.filter { $0.observer !== observer && ($0.key as? U) != key }
+            self.observers = self.observers.filter { $0.observer != nil && $0.observer !== observer && ($0.key as? U) != key }
         }
     }
 
