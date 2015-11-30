@@ -87,7 +87,7 @@ public class EventCenter {
     private var observers = [ObserverInfo]()
     
     private struct ObserverInfo {
-        let observer: AnyObject
+        weak var observer: AnyObject?
         let key: Any?
         let handler: Any
         let queue: dispatch_queue_t?
