@@ -6,57 +6,57 @@
 
 import UIKit
 
-public class EventCenter {
-    static public let defaultCenter = EventCenter()
+open class EventCenter {
+    static open let defaultCenter = EventCenter()
     
     public init() {
     }
     
-    public func register<T>(observer: AnyObject, handler: T -> Void) {
+    open func register<T>(_ observer: AnyObject, handler: (T) -> Void) {
         register(observer, queue: nil, handler:handler)
     }
     
-    public func registerOnMainThread<T>(observer: AnyObject, handler: T -> Void) {
-        register(observer, queue: dispatch_get_main_queue(), handler:handler)
+    open func registerOnMainThread<T>(_ observer: AnyObject, handler: (T) -> Void) {
+        register(observer, queue: DispatchQueue.main, handler:handler)
     }
     
-    public func register<T>(observer: AnyObject, queue: dispatch_queue_t?, handler: T -> Void) {
-        dispatch_sync(EventCenter.operationQueue) {
+    open func register<T>(_ observer: AnyObject, queue: DispatchQueue?, handler: (T) -> Void) {
+        EventCenter.operationQueue.sync {
             self.observers.append(ObserverInfo(observer: observer, key: nil, handler: handler, queue: queue))
         }
     }
     
-    public func register<T,U:Equatable>(observer: AnyObject, key:U, handler: T -> Void) {
+    open func register<T,U:Equatable>(_ observer: AnyObject, key:U, handler: (T) -> Void) {
         register(observer, key:key, queue: nil, handler:handler)
     }
     
-    public func registerOnMainThread<T,U:Equatable>(observer: AnyObject, key:U, handler: T -> Void) {
-        register(observer, key:key, queue: dispatch_get_main_queue(), handler:handler)
+    open func registerOnMainThread<T,U:Equatable>(_ observer: AnyObject, key:U, handler: (T) -> Void) {
+        register(observer, key:key, queue: DispatchQueue.main, handler:handler)
     }
     
-    public func register<T,U:Equatable>(observer: AnyObject, key:U, queue: dispatch_queue_t?, handler: T -> Void) {
-        dispatch_sync(EventCenter.operationQueue) {
+    open func register<T,U:Equatable>(_ observer: AnyObject, key:U, queue: DispatchQueue?, handler: (T) -> Void) {
+        EventCenter.operationQueue.sync {
             self.observers.append(ObserverInfo(observer: observer, key:key, handler: handler, queue: queue))
         }
     }
     
-    public func unregister(observer: AnyObject) {
-        dispatch_sync(EventCenter.operationQueue) {
+    open func unregister(_ observer: AnyObject) {
+        EventCenter.operationQueue.sync {
             self.observers = self.observers.filter { $0.observer != nil && $0.observer !== observer }
         }
     }
     
-    public func unregister<U:Equatable>(observer: AnyObject, key: U) {
-        dispatch_sync(EventCenter.operationQueue) {
+    open func unregister<U:Equatable>(_ observer: AnyObject, key: U) {
+        EventCenter.operationQueue.sync {
             self.observers = self.observers.filter { $0.observer != nil && $0.observer !== observer && ($0.key as? U) != key }
         }
     }
 
-    public func post<T>(obj: T) {
+    open func post<T>(_ obj: T) {
         for info in observers {
-            if let h = info.handler as? (T -> Void) where info.key == nil && equalsHandlerType(obj, handler: info.handler) {
+            if let h = info.handler as? ((T) -> Void), info.key == nil && equalsHandlerType(obj, handler: info.handler) {
                 if let queue = info.queue {
-                    dispatch_async(queue) { h(obj) }
+                    queue.async { h(obj) }
                 } else {
                     h(obj)
                 }
@@ -64,14 +64,14 @@ public class EventCenter {
         }
     }
     
-    public func post<T, U:Equatable>(obj: T, key:U) {
+    open func post<T, U:Equatable>(_ obj: T, key:U) {
         for info in observers {
-            if let h = info.handler as? (T -> Void), k = info.key as? U where equalsHandlerType(obj, handler: info.handler) {
+            if let h = info.handler as? ((T) -> Void), let k = info.key as? U, equalsHandlerType(obj, handler: info.handler) {
                 if k != key {
                     continue
                 }
                 if let queue = info.queue {
-                    dispatch_async(queue) { h(obj) }
+                    queue.async { h(obj) }
                 } else {
                     h(obj)
                 }
@@ -79,18 +79,18 @@ public class EventCenter {
         }
     }
     
-    private func equalsHandlerType<T>(obj: T, handler:Any) -> Bool {
-        return Mirror(reflecting: handler).subjectType is (T -> Void).Type
+    fileprivate func equalsHandlerType<T>(_ obj: T, handler:Any) -> Bool {
+        return Mirror(reflecting: handler).subjectType is ((T) -> Void).Type
     }
 
-    static private let operationQueue = dispatch_queue_create("mokemokechicken.EventCenter", DISPATCH_QUEUE_SERIAL)
-    private var observers = [ObserverInfo]()
+    static fileprivate let operationQueue = DispatchQueue(label: "mokemokechicken.EventCenter", attributes: [])
+    fileprivate var observers = [ObserverInfo]()
     
-    private struct ObserverInfo {
+    fileprivate struct ObserverInfo {
         weak var observer: AnyObject?
         let key: Any?
         let handler: Any
-        let queue: dispatch_queue_t?
+        let queue: DispatchQueue?
     }
 }
 
