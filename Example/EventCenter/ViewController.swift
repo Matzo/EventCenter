@@ -12,20 +12,20 @@ import EventCenter
 
 class ViewController: UIViewController {
 
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         let ec = EventCenter.defaultCenter
         
         
         // Handlers called only when the posted object-type is equal to the hander's arg-type.
         ec.register(self) { (event: MyAwesomeModel.UpdateEvent) in
-            self.updateView()
+            print("update view! 1")
         }
         
         ec.register(self) { (event: MyAwesomeModel.StoreEvent) in
             switch(event) {
-            case .SUCCESS:
+            case .success:
                 print("store ok!")
-            case .ERROR:
+            case .error:
                 print("store error!")
             }
         }
@@ -39,26 +39,32 @@ class ViewController: UIViewController {
         ec.registerOnMainThread(self, handler: self.onEvent)
     }
     
-    override func viewWillDisappear(animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         EventCenter.defaultCenter.unregister(self)
     }
     
     func updateView() {
-        // ...
+        print("update view! 2")
     }
     
-    func onEvent(event: MyAwesomeModel.UpdateEvent) {
+    func onEvent(_ event: MyAwesomeModel.UpdateEvent) {
         self.updateView()
     }
-    
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+
+        MyAwesomeModel().notifyUpdate()
+        MyAwesomeModel().notifyStoreResult()
+    }
 }
 
 
 class MyAwesomeModel {
     class UpdateEvent {}
     enum StoreEvent {
-        case SUCCESS
-        case ERROR
+        case success
+        case error
     }
     
     func notifyUpdate() {
@@ -66,7 +72,7 @@ class MyAwesomeModel {
     }
     
     func notifyStoreResult() {
-        EventCenter.defaultCenter.post(StoreEvent.SUCCESS)
+        EventCenter.defaultCenter.post(StoreEvent.success)
     }
 }
 

@@ -19,7 +19,7 @@ class EventCenterSpec: QuickSpec {
                 var called = 0
                 ec.register(self) { (num: Int) in
                     expect(num) == 99
-                    called++
+                    called += 1
                 }
                 ec.post(99)
                 
@@ -29,7 +29,7 @@ class EventCenterSpec: QuickSpec {
                 
                 ec.register(self) { (num: Int) in
                     expect(num) == 101
-                    called++
+                    called += 1
                 }
                 ec.post(101)
 
@@ -42,11 +42,11 @@ class EventCenterSpec: QuickSpec {
                 var called = 0
                 ec.register(self) { (num: Int) in
                     expect(num) == 200
-                    called++
+                    called += 1
                 }
                 ec.register(self) { (s: String) in
                     expect(s) == "yes!"
-                    called++
+                    called += 1
                 }
                 
                 ec.post(200)
@@ -61,25 +61,25 @@ class EventCenterSpec: QuickSpec {
                 
                 ec.register(self) { (event: MyEvent) in
                     expect(event.num) == 50
-                    called++
+                    called += 1
                 }
                 
                 ec.register(self) { (event: ChildEvent) in
                     expect(event.num) == 60
-                    called++
+                    called += 1
                 }
                 
                 ec.register(self) { (event: MyEventStruct) in
                     expect(event.name) == "struct event"
-                    called++
+                    called += 1
                 }
                 
                 ec.register(self) { (event: EnumEvent) in
-                    called++
+                    called += 1
                     switch (event) {
-                    case .SUCCESS(let code):
+                    case .success(let code):
                         expect(code) == 200
-                    case .ERROR(let code):
+                    case .error(let code):
                         expect(code) == 500
                     }
                 }
@@ -89,8 +89,8 @@ class EventCenterSpec: QuickSpec {
                 ec.post(MyEvent(num: 50))
                 ec.post(ChildEvent(num: 60))
                 ec.post(MyEventStruct(name: "struct event"))
-                ec.post(EnumEvent.SUCCESS(code: 200))
-                ec.post(EnumEvent.ERROR(code: 500))
+                ec.post(EnumEvent.success(code: 200))
+                ec.post(EnumEvent.error(code: 500))
                 
                 expect(called) == 5
                 expect(self.called2) == 1
@@ -104,32 +104,31 @@ class EventCenterSpec: QuickSpec {
                 
                 ec.registerOnMainThread(self) { (num: Int) in
                     expect(num) == 30
-                    expect(NSThread.isMainThread()) == true
-                    called++
+                    expect(Thread.isMainThread) == true
+                    called += 1
                 }
                 
                 ec.register(self) { (num: Int) in
                     expect(num) == 30
-                    expect(NSThread.isMainThread()) == false
-                    called++
-                }
-                
-                ec.register(self, queue: dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0)) { (num: Int) in
+                    expect(Thread.isMainThread) == false
+                    called += 1                }
+
+                ec.register(self, queue: DispatchQueue.global()) { (num: Int) in
                     expect(num) == 30
-                    expect(NSThread.isMainThread()) == false
-                    called++
+                    expect(Thread.isMainThread) == false
+                    called += 1
                 }
                 
-                
-                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
-                    expect(NSThread.isMainThread()) == false
+
+                DispatchQueue.global().async {
+                    expect(Thread.isMainThread) == false
                     ec.post(30)
                 }
-                
-                NSThread.sleepForTimeInterval(1.0)
+
+                Thread.sleep(forTimeInterval: 1.0)
 
                 waitUntil { done in
-                    NSThread.sleepForTimeInterval(0.9)
+                    Thread.sleep(forTimeInterval: 0.9)
                     expect(called) == 3
                     done()
                 }
@@ -143,7 +142,7 @@ class EventCenterSpec: QuickSpec {
                 var called = 0
                 ec.register(self, key:"key") { (num: Int) in
                     expect(num) == 99
-                    called++
+                    called += 1
                 }
                 ec.post(99, key:"key")
                 
@@ -151,11 +150,11 @@ class EventCenterSpec: QuickSpec {
                 ec.unregister(self, key:"key")
                 ec.post(100, key:"key")  // not handled
                 
-                ec.register(self, key:EnumKey.SUCCESS) { (num: Int) in
+                ec.register(self, key:EnumKey.success) { (num: Int) in
                     expect(num) == 101
-                    called++
+                    called += 1
                 }
-                ec.post(101, key:EnumKey.SUCCESS)
+                ec.post(101, key:EnumKey.success)
 
                 expect(called) == 2
             }
@@ -165,34 +164,34 @@ class EventCenterSpec: QuickSpec {
                 
                 var called = 0
 
-                ec.register(self, key:EnumKey.SUCCESS) { (num: Int) in
+                ec.register(self, key:EnumKey.success) { (num: Int) in
                     expect(num) == 200
-                    called++
+                    called += 1
                 }
-                ec.register(self, key:EnumKey.SUCCESS) { (s: String) in
+                ec.register(self, key:EnumKey.success) { (s: String) in
                     expect(s) == "yes!"
-                    called++
+                    called += 1
                 }
                 ec.register(self, key:"yes!") { (s: String) in
                     expect(s) == "yes!"
-                    called++
+                    called += 1
                 }
                 
-                ec.post(200, key:EnumKey.SUCCESS)
-                ec.post("yes!", key:EnumKey.SUCCESS)
+                ec.post(200, key:EnumKey.success)
+                ec.post("yes!", key:EnumKey.success)
                 ec.post("yes!", key:"yes!")
                 
                 ec.post("yes!", key:"yes?")
-                ec.post("yes!", key:EnumKey.ERROR)
+                ec.post("yes!", key:EnumKey.error)
                 expect(called) == 3
             }
             
         }
     }
     
-    func myHandler(event: MyEvent) {
+    func myHandler(_ event: MyEvent) {
         expect(event.num) == 50
-        called2++
+        called2 += 1
     }
     
 }
@@ -211,13 +210,13 @@ struct MyEventStruct {
 }
 
 enum EnumEvent {
-    case SUCCESS(code: Int)
-    case ERROR(code: Int)
+    case success(code: Int)
+    case error(code: Int)
 }
 
 enum EnumKey {
-    case SUCCESS
-    case ERROR
+    case success
+    case error
 }
 
 //        describe("these will fail") {

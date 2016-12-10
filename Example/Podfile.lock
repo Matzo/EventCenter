@@ -1,12 +1,12 @@
 PODS:
   - EventCenter (1.0.0)
-  - Nimble (2.0.0-rc.3)
-  - Quick (0.6.0)
+  - Nimble (5.1.1)
+  - Quick (1.0.0)
 
 DEPENDENCIES:
   - EventCenter (from `../`)
-  - Nimble (= 2.0.0-rc.3)
-  - Quick (~> 0.6.0)
+  - Nimble
+  - Quick
 
 EXTERNAL SOURCES:
   EventCenter:
@@ -14,7 +14,9 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   EventCenter: 057f90f1ce1627204467cd7c52574615343e4773
-  Nimble: 9dff98ee195ffe7351d3b2fb01d3a1420fd97948
-  Quick: 563686dbcf0ae0f9f7401ac9cd2d786ee1b7f3d7
+  Nimble: 415e3aa3267e7bc2c96b05fa814ddea7bb686a29
+  Quick: 8024e4a47e6cc03a9d5245ef0948264fc6d27cff
 
-COCOAPODS: 0.38.2
+PODFILE CHECKSUM: efbaab33ecb65414c381c89e0f4ef60f7079ffa7
+
+COCOAPODS: 1.1.1
