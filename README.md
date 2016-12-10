@@ -15,7 +15,7 @@ To run the example project, clone the repo, and run `pod install` from the Examp
 
 ## Requirements
 
-developed on swift 1.2
+developed on swift 3.0.1
 
 ## Installation
 
