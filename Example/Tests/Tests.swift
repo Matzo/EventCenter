@@ -134,66 +134,12 @@ class EventCenterSpec: QuickSpec {
                 }
             }
         }
-        
-        describe("EventCenter with key") {
-
-            it("can register with key and unregister Handler") {
-                let ec = EventCenter.defaultCenter  // use default EventCenter
-                var called = 0
-                ec.register(self, key:"key") { (num: Int) in
-                    expect(num) == 99
-                    called += 1
-                }
-                ec.post(99, key:"key")
-                
-
-                ec.unregister(self, key:"key")
-                ec.post(100, key:"key")  // not handled
-                
-                ec.register(self, key:EnumKey.success) { (num: Int) in
-                    expect(num) == 101
-                    called += 1
-                }
-                ec.post(101, key:EnumKey.success)
-
-                expect(called) == 2
-            }
-            
-            it("Only Called Correct key") {
-                let ec = EventCenter()  // can use original EventCenter
-                
-                var called = 0
-
-                ec.register(self, key:EnumKey.success) { (num: Int) in
-                    expect(num) == 200
-                    called += 1
-                }
-                ec.register(self, key:EnumKey.success) { (s: String) in
-                    expect(s) == "yes!"
-                    called += 1
-                }
-                ec.register(self, key:"yes!") { (s: String) in
-                    expect(s) == "yes!"
-                    called += 1
-                }
-                
-                ec.post(200, key:EnumKey.success)
-                ec.post("yes!", key:EnumKey.success)
-                ec.post("yes!", key:"yes!")
-                
-                ec.post("yes!", key:"yes?")
-                ec.post("yes!", key:EnumKey.error)
-                expect(called) == 3
-            }
-            
-        }
     }
-    
+
     func myHandler(_ event: MyEvent) {
         expect(event.num) == 50
         called2 += 1
     }
-    
 }
 
 class MyEvent {
@@ -218,44 +164,3 @@ enum EnumKey {
     case success
     case error
 }
-
-//        describe("these will fail") {
-//
-//            it("can do maths") {
-//                expect(1) == 2
-//            }
-//
-//            it("can read") {
-//                expect("number") == "string"
-//            }
-//
-//            it("will eventually fail") {
-//                expect("time").toEventually( equal("done") )
-//            }
-//
-//            context("these will pass") {
-//
-//                it("can do maths") {
-//                    expect(23) == 23
-//                }
-//
-//                it("can read") {
-//                    expect("🐮") == "🐮"
-//                }
-//
-//                it("will eventually pass") {
-//                    var time = "passing"
-//
-//                    dispatch_async(dispatch_get_main_queue()) {
-//                        time = "done"
-//                    }
-//
-//                    waitUntil { done in
-//                        NSThread.sleepForTimeInterval(0.5)
-//                        expect(time) == "done"
-//
-//                        done()
-//                    }
-//                }
-//            }
-//        }
